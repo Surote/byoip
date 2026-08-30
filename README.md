@@ -1,8 +1,16 @@
 # byoip
 
-A visual `curl --resolve`. Add a rule like `*.apps.swongpai.local → 10.0.0.5`, browse `https://console.apps.swongpai.local/` through the tool, and see the site render — before any real DNS record exists. Built to answer one question fast: *"does this OpenShift router / LB VIP answer correctly for this hostname?"*
+A visual `curl --resolve`. Add a rule like `*.apps.swongpai.local → 10.0.0.5`, browse `https://console.apps.swongpai.local/` through the tool, and see the site render — before any real DNS record exists.
 
 Single Go binary, zero third-party dependencies — works unmodified in a fully disconnected (air-gapped) OpenShift cluster.
+
+![byoip rendering a route reached through a NodePort, with the diagnostics panel showing the matched rule, dialed address, and the ingress-operator wildcard certificate](docs/screenshot.png)
+
+## Why
+
+It was built to test an **OpenShift IngressController exposed via NodePort**, where the router answers on a node IP at a high port (`10.10.10.11:31034` above) but every route still expects its real hostname in the `Host` header and TLS SNI. Hitting the NodePort directly gets you the default backend; adding a `/etc/hosts` entry can't express a port; and `curl --resolve` proves the connection works but won't show you the page. byoip closes that gap: map `hostname → nodeIP:nodePort`, then browse the route as the cluster will serve it once DNS and a load balancer are in place. The diagnostics confirm you reached the right router — the screenshot's `ingress-operator` wildcard cert is proof the OpenShift ingress stack answered, not something else on that port.
+
+Nothing about it is OpenShift-specific, though. Anything that keys off the hostname works the same way: validating a new LB VIP before the DNS cutover, previewing a vhost on a staging server, reaching a service through a jump host's port forward, or checking which certificate a given IP actually presents for a name.
 
 ## Features
 
