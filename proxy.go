@@ -46,6 +46,10 @@ var stripResponseHeaders = map[string]bool{
 	"Content-Security-Policy-Report-Only": true,
 	"X-Frame-Options":                     true,
 	"Strict-Transport-Security":           true,
+	// Without this the browser withholds the Referer path on asset requests,
+	// and the root-relative fallback in handleRefererFallback has nothing to
+	// recover the proxied host from -- every stylesheet and image 404s.
+	"Referrer-Policy": true,
 }
 
 // fetchViaRule dials rule.Addr(scheme) directly -- never the hostname --
