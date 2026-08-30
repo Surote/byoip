@@ -1,0 +1,18 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: byoip
+  labels:
+    app: byoip
+spec:
+  # host: byoip.apps.your-cluster.example.com   # CHANGE ME (optional): omit
+  # to accept the cluster's default *.apps.<cluster-domain> host.
+  to:
+    kind: Service
+    name: byoip
+    weight: 100
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect

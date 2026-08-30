@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: byoip
+  labels:
+    app: byoip
+spec:
+  type: ClusterIP
+  selector:
+    app: byoip
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP

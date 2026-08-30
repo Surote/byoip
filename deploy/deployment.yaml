@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: byoip
+  labels:
+    app: byoip
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: byoip
+  template:
+    metadata:
+      labels:
+        app: byoip
+    spec:
+      # No fixed runAsUser/fsGroup -- OpenShift's restricted-v2 SCC assigns
+      # an arbitrary UID (in the root group) for the project at admission
+      # time. Leaving these unset lets that assignment apply.
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: byoip
+          # CHANGE ME: point this at your image in an internal/mirrored
+          # registry, e.g. image-registry.openshift-image-registry.svc:5000/<project>/byoip:latest
+          image: image-registry.example.com/byoip:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          # Connect + TLS-handshake + response-header timeout, in whole
+          # seconds. Defaults to 4 if unset or invalid.
+          # env:
+          #   - name: TIMEOUT_SECONDS
+          #     value: "4"
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 2
+            periodSeconds: 10
+            timeoutSeconds: 2
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 20
+            timeoutSeconds: 2
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            runAsNonRoot: true
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
