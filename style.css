@@ -198,6 +198,11 @@ iframe#viewer {
   width: 100%;
   border: 0;
   background: #fff;
+  /* Pin the framed document to light UA styling. Without this, Chrome's
+     built-in JSON/plain-text viewers inherit our dark scheme and paint
+     light text over the white background above -- the response renders
+     invisible. Targets serving their own HTML are unaffected. */
+  color-scheme: light;
   min-height: 300px;
 }
 
